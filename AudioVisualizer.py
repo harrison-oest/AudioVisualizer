@@ -44,37 +44,6 @@ stream = PAud.open(
     frames_per_buffer=CHUNK
     )
 
-#SET UP PLOTS
-fig, (ax, ay, az) = plt.subplots(3, figsize=(12,8))
-                                                                #ax = Waveform
-                                                                #ay = Fourier Composite
-                                                                #az = Binned Values from ay
-
-#X-Axes
-Audx = np.arange(0, 2*CHUNK, 2)
-FFTx = np.linspace(0, RATE, CHUNK)
-Barx = np.arange(16)
-
-#Line objs
-Audline, = ax.plot(Audx, np.random.rand(CHUNK), '-')
-FFTline, = ay.semilogx(FFTx, np.random.rand(CHUNK), '-')
-Barline, = az.plot(Barx, [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15], '-')
-                                                                #All Y-data in above lines gets changed, just a placeholder
-
-#make the plot look nice
-fig.tight_layout(pad=3)                                         #Space out graphs
-ax.set_title('Recorded Audio')
-ax.set_ylabel('Magnitude')
-ay.set_title('Frequency Transform')
-az.set_title('Frequency Bin Amplitude')
-ax.set_ylim(0,255)
-ax.set_xlim(0,2*CHUNK)
-plt.setp(ax, xticks=[0, CHUNK, 2*CHUNK], yticks=[0,128,255])
-ay.set_xlim(20, RATE/2)
-az.set_ylim(0,1)
-az.set_xlim(0,15)
-
-
 #THE 'DO STUFF' PART OF THE CODE
 while True:
                                                                 #Gather data and unpack into integers
