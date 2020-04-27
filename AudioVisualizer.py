@@ -1,10 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[2]:
-
-
-#import libs
 import matplotlib.pyplot as plt
 import numpy as np
 import pyaudio
@@ -14,22 +7,16 @@ from scipy.fftpack import fft
 from tkinter import TclError
 import time
 from apa102_pi.driver import apa102
+from colour import Color
 
 strip = apa102.APA102(num_led=240, order='rgb')
 strip.clear_strip()
 
-
-# get_ipython().run_line_magic('matplotlib', 'tk')
-                                                                    #opens up new window for live graphing
-
-CHUNK = 8192                                                        #size of each audio packet
+CHUNK = 1024                                                        #size of each audio packet
 FORMAT = pyaudio.paInt16                                            #bit size of audio packet input
-CHANNELS = 2                                                        #mono channel microphone
+CHANNELS = 1                                                        #mono channel microphone
 RATE = 44100                                                        #44.1 kHz recording freq
 INDEX = 2
-
-
-# In[3]:
 
 
 #INITIALIZE PYAUDIO STREAM
@@ -44,54 +31,22 @@ stream = PAud.open(
     frames_per_buffer=CHUNK
     )
 
-#SET UP PLOTS
-fig, (ax, ay, az) = plt.subplots(3, figsize=(12,8))
-                                                                #ax = Waveform
-                                                                #ay = Fourier Composite
-                                                                #az = Binned Values from ay
-
-#X-Axes
-Audx = np.arange(0, 2*CHUNK, 2)
-FFTx = np.linspace(0, RATE, CHUNK)
-Barx = np.arange(16)
-
-#Line objs
-Audline, = ax.plot(Audx, np.random.rand(CHUNK), '-')
-FFTline, = ay.semilogx(FFTx, np.random.rand(CHUNK), '-')
-Barline, = az.plot(Barx, [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15], '-')
-                                                                #All Y-data in above lines gets changed, just a placeholder
-
-#make the plot look nice
-fig.tight_layout(pad=3)                                         #Space out graphs
-ax.set_title('Recorded Audio')
-ax.set_ylabel('Magnitude')
-ay.set_title('Frequency Transform')
-az.set_title('Frequency Bin Amplitude')
-ax.set_ylim(0,255)
-ax.set_xlim(0,2*CHUNK)
-plt.setp(ax, xticks=[0, CHUNK, 2*CHUNK], yticks=[0,128,255])
-ay.set_xlim(20, RATE/2)
-az.set_ylim(0,1)
-az.set_xlim(0,15)
-
-
+count = 0
 #THE 'DO STUFF' PART OF THE CODE
 while True:
-                                                                #Gather data and unpack into integers
+                                                                    #Gather data and unpack into integers
     data = stream.read(CHUNK, exception_on_overflow = False)
     Idata=struct.unpack_from(str(CHUNK) + 'BH', data, offset=1)
         
                                                                 #place into array and offset accordingly for smooth sound wave
-    Ndata = np.array(Idata, dtype='b')[::2] + 128
-    Audline.set_ydata(Ndata)                                    #set y data for audio waveform
+    Ndata = np.array(Idata, dtype='b')[::2] + 128                                   #set y data for audio waveform
         
     #do the FFT magic
     FFTy = fft(Ndata)
     savedata = np.abs(FFTy[0:CHUNK] * 4 / (256 * CHUNK))
-    FFTline.set_ydata(savedata)                                 #set y data for FFT composite
     
     #Binned Data
-    newdata = FFTline.get_ydata()[1:]           #Create new data set, remove 1st value since 0-11Hz frequency gets unneccesarily
+    newdata = savedata[1:]           #Create new data set, remove 1st value since 0-11Hz frequency gets unneccesarily
                                                 #amplified from white noise and uneven signals
     #create bins
     bins = [
@@ -109,8 +64,8 @@ while True:
         newdata[181:240],                       #11: 2k-2.6k
         newdata[241:340],                       #12: 2.6k-3.8k
         newdata[341:454],                       #13: 3.8k-5k
-        newdata[455:910],                       #14: 5k - 10k
-        newdata[911:2000]                       #15: 10k - 20k
+        newdata[455:500],                       #14: 5k - 10k
+        newdata[501:2000]                       #15: 10k - 20k
     ]
     
     #get max 3 values and sum
@@ -123,78 +78,163 @@ while True:
         binData = binData**(1/2) * 54                                           #Log scaling 
         y_data.append(np.sum(binData))                                      #Add 3 largest values to the 
         
-    Barline.set_ydata(y_data)                                               #set y data for bins
-    
     multiplier = 0.6
-    strip.clear_strip()
+    mid_multiplier = 0.8
+    brightness = 10
+    for i in range(0,240):
+        strip.set_pixel_rgb(i, 0x000000)
+    strip.show()
     
+    colors = [0xFF0000, 0x00FF00, 0x0000FF]
+        
     for val in range(1,len(y_data)+1):
         if val == 1:
             led_size = int(y_data[val-1] * multiplier)
             for led in range(0,led_size):
-                strip.set_pixel_rgb(led, 0xFF0000)
+                if led >= 0 and led < 5:
+                    strip.set_pixel_rgb(led, colors[2], brightness)
+                elif led >= 5 and led < 10:
+                    strip.set_pixel_rgb(led, colors[1], brightness)
+                elif led >= 10:
+                    strip.set_pixel_rgb(led, colors[0], brightness)   
         elif val == 2:
             led_size = int(y_data[val-1] * multiplier)
             for led in range(15,led_size+15):
-                strip.set_pixel_rgb(led, 0xFF0000)
+                if led >= 15 and led < 20:
+                    strip.set_pixel_rgb(led, colors[2], brightness)
+                elif led >= 20 and led < 25:
+                    strip.set_pixel_rgb(led, colors[1], brightness)
+                elif led >= 25:
+                    strip.set_pixel_rgb(led, colors[0], brightness)
         elif val == 3:
             led_size = int(y_data[val-1] * multiplier)
             for led in range(30,led_size+30):
-                strip.set_pixel_rgb(led, 0xFF0000)            
+                if led >= 30 and led < 35:
+                    strip.set_pixel_rgb(led, colors[2], brightness)
+                elif led >= 35 and led < 40:
+                    strip.set_pixel_rgb(led, colors[1], brightness)
+                elif led >= 40:
+                    strip.set_pixel_rgb(led, colors[0], brightness)            
         elif val == 4:
             led_size = int(y_data[val-1] * multiplier)
             for led in range(45,led_size+45):
-                strip.set_pixel_rgb(led, 0xFF0000)
+                if led >= 45 and led < 50:
+                    strip.set_pixel_rgb(led, colors[2], brightness)
+                elif led >= 50 and led < 55:
+                    strip.set_pixel_rgb(led, colors[1], brightness)
+                elif led >= 55:
+                    strip.set_pixel_rgb(led, colors[0], brightness)
         elif val == 5:
             led_size = int(y_data[val-1] * multiplier)
             for led in range(60,led_size+60):
-                strip.set_pixel_rgb(led, 0x00FF00)
+                if led >= 60 and led < 65:
+                    strip.set_pixel_rgb(led, colors[2], brightness)
+                elif led >= 65 and led < 70:
+                    strip.set_pixel_rgb(led, colors[1], brightness)
+                elif led >= 70:
+                    strip.set_pixel_rgb(led, colors[0], brightness)
         elif val == 6:
-            led_size = int(y_data[val-1] * multiplier)
+            led_size = int(y_data[val-1] * mid_multiplier)
             for led in range(75,led_size+75):
-                strip.set_pixel_rgb(led, 0x00FF00)
+                if led >= 75 and led < 80:
+                    strip.set_pixel_rgb(led, colors[2], brightness)
+                elif led >= 80 and led < 85:
+                    strip.set_pixel_rgb(led, colors[1], brightness)
+                elif led >= 85:
+                    strip.set_pixel_rgb(led, colors[0], brightness)
         elif val == 7:
-            led_size = int(y_data[val-1] * multiplier)
+            led_size = int(y_data[val-1] * mid_multiplier)
             for led in range(90,led_size+90):
-                strip.set_pixel_rgb(led, 0x00FF00)
+                if led >= 90 and led < 95:
+                    strip.set_pixel_rgb(led, colors[2], brightness)
+                elif led >= 95 and led < 100:
+                    strip.set_pixel_rgb(led, colors[1], brightness)
+                elif led >= 100:
+                    strip.set_pixel_rgb(led, colors[0], brightness)
         elif val == 8:
-            led_size = int(y_data[val-1] * multiplier)
+            led_size = int(y_data[val-1] * mid_multiplier)
             for led in range(105,led_size+105):
-                strip.set_pixel_rgb(led, 0x00FF00)
+                if led >= 105 and led < 110:
+                    strip.set_pixel_rgb(led, colors[2], brightness)
+                elif led >= 110 and led < 115:
+                    strip.set_pixel_rgb(led, colors[1], brightness)
+                elif led >= 115:
+                    strip.set_pixel_rgb(led, colors[0], brightness)
         elif val == 9:
-            led_size = int(y_data[val-1] * multiplier)
+            led_size = int(y_data[val-1] * mid_multiplier)
             for led in range(120,led_size+120):
-                strip.set_pixel_rgb(led, 0x0000FF)            
+                if led >= 120 and led < 125:
+                    strip.set_pixel_rgb(led, colors[2], brightness)
+                elif led >= 125 and led < 130:
+                    strip.set_pixel_rgb(led, colors[1], brightness)
+                elif led >= 130:
+                    strip.set_pixel_rgb(led, colors[0], brightness)           
         elif val == 10:
-            led_size = int(y_data[val-1] * multiplier)
+            led_size = int(y_data[val-1] * mid_multiplier)
             for led in range(135,led_size+135):
-                strip.set_pixel_rgb(led, 0x0000FF)
+                if led >= 135 and led < 140:
+                    strip.set_pixel_rgb(led, colors[2], brightness)
+                elif led >= 140 and led < 145:
+                    strip.set_pixel_rgb(led, colors[1], brightness)
+                elif led >= 145:
+                    strip.set_pixel_rgb(led, colors[0], brightness)
         elif val == 11:
-            led_size = int(y_data[val-1] * multiplier)
+            led_size = int(y_data[val-1] * mid_multiplier)
             for led in range(150,led_size+150):
-                strip.set_pixel_rgb(led, 0x0000FF)
+                if led >= 150 and led < 155:
+                    strip.set_pixel_rgb(led, colors[2], brightness)
+                elif led >= 155 and led < 160:
+                    strip.set_pixel_rgb(led, colors[1], brightness)
+                elif led >= 160:
+                    strip.set_pixel_rgb(led, colors[0], brightness)
         elif val == 12:
-            led_size = int(y_data[val-1] * multiplier)
+            led_size = int(y_data[val-1] * mid_multiplier)
             for led in range(165,led_size+165):
-                strip.set_pixel_rgb(led, 0x0000FF)
+                if led >= 165 and led < 170:
+                    strip.set_pixel_rgb(led, colors[2], brightness)
+                elif led >= 170 and led < 175:
+                    strip.set_pixel_rgb(led, colors[1], brightness)
+                elif led >= 175:
+                    strip.set_pixel_rgb(led, colors[0], brightness)
         elif val == 13:
-            led_size = int(y_data[val-1] * multiplier)
+            led_size = int(y_data[val-1] * mid_multiplier)
             for led in range(180,led_size+180):
-                strip.set_pixel_rgb(led, 0xFFFFFF)
+                if led >= 180 and led < 185:
+                    strip.set_pixel_rgb(led, colors[2], brightness)
+                elif led >= 185 and led < 190:
+                    strip.set_pixel_rgb(led, colors[1], brightness)
+                elif led >= 190:
+                    strip.set_pixel_rgb(led, colors[0], brightness)
         elif val == 14:
-            led_size = int(y_data[val-1] * multiplier)
+            led_size = int(y_data[val-1] * mid_multiplier)
             for led in range(195,led_size+195):
-                strip.set_pixel_rgb(led, 0xFFFFFF)            
+                if led >= 195 and led < 200:
+                    strip.set_pixel_rgb(led, colors[2], brightness)
+                elif led >= 200 and led < 205:
+                    strip.set_pixel_rgb(led, colors[1], brightness)
+                elif led >= 205:
+                    strip.set_pixel_rgb(led, colors[0], brightness)
         elif val == 15:
             led_size = int(y_data[val-1] * multiplier)
             for led in range(210,led_size+210):
-                strip.set_pixel_rgb(led, 0xFFFFFF)
+                if led >= 210 and led < 215:
+                    strip.set_pixel_rgb(led, colors[2], brightness)
+                elif led >= 215 and led < 220:
+                    strip.set_pixel_rgb(led, colors[1], brightness)
+                elif led >= 220:
+                    strip.set_pixel_rgb(led, colors[0], brightness)
         elif val == 16:
             led_size = int(y_data[val-1] * multiplier)
             for led in range(225,led_size+225):
-                strip.set_pixel_rgb(led, 0xFFFFFF)           
+                if led >= 225 and led < 230:
+                    strip.set_pixel_rgb(led, colors[2], brightness)
+                elif led >= 230 and led < 235:
+                    strip.set_pixel_rgb(led, colors[1], brightness)
+                elif led >= 235:
+                    strip.set_pixel_rgb(led, colors[0], brightness)         
         
     strip.show()
+    count += 1
 
 
 
