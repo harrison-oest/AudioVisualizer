@@ -31,7 +31,6 @@ stream = PAud.open(
     frames_per_buffer=CHUNK
     )
 
-count = 0
 #THE 'DO STUFF' PART OF THE CODE
 while True:
                                                                     #Gather data and unpack into integers
