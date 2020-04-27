@@ -77,8 +77,9 @@ while True:
         binData = binData**(1/2) * 54                                           #Log scaling 
         y_data.append(np.sum(binData))                                      #Add 3 largest values to the 
         
-    multiplier = 0.6
-    mid_multiplier = 0.8
+    low_multiplier = 0.4
+    mid_multiplier = 1.2
+    high_multiplier = 0.5
     brightness = 10
     for i in range(0,240):
         strip.set_pixel_rgb(i, 0x000000)
@@ -88,7 +89,7 @@ while True:
         
     for val in range(1,len(y_data)+1):
         if val == 1:
-            led_size = int(y_data[val-1] * multiplier)
+            led_size = int(y_data[val-1] * low_multiplier)
             for led in range(0,led_size):
                 if led >= 0 and led < 5:
                     strip.set_pixel_rgb(led, colors[2], brightness)
@@ -97,7 +98,7 @@ while True:
                 elif led >= 10:
                     strip.set_pixel_rgb(led, colors[0], brightness)   
         elif val == 2:
-            led_size = int(y_data[val-1] * multiplier)
+            led_size = int(y_data[val-1] * low_multiplier)
             for led in range(15,led_size+15):
                 if led >= 15 and led < 20:
                     strip.set_pixel_rgb(led, colors[2], brightness)
@@ -106,7 +107,7 @@ while True:
                 elif led >= 25:
                     strip.set_pixel_rgb(led, colors[0], brightness)
         elif val == 3:
-            led_size = int(y_data[val-1] * multiplier)
+            led_size = int(y_data[val-1] * low_multiplier)
             for led in range(30,led_size+30):
                 if led >= 30 and led < 35:
                     strip.set_pixel_rgb(led, colors[2], brightness)
@@ -115,7 +116,7 @@ while True:
                 elif led >= 40:
                     strip.set_pixel_rgb(led, colors[0], brightness)            
         elif val == 4:
-            led_size = int(y_data[val-1] * multiplier)
+            led_size = int(y_data[val-1] * low_multiplier)
             for led in range(45,led_size+45):
                 if led >= 45 and led < 50:
                     strip.set_pixel_rgb(led, colors[2], brightness)
@@ -124,7 +125,7 @@ while True:
                 elif led >= 55:
                     strip.set_pixel_rgb(led, colors[0], brightness)
         elif val == 5:
-            led_size = int(y_data[val-1] * multiplier)
+            led_size = int(y_data[val-1] * low_multiplier)
             for led in range(60,led_size+60):
                 if led >= 60 and led < 65:
                     strip.set_pixel_rgb(led, colors[2], brightness)
@@ -133,7 +134,7 @@ while True:
                 elif led >= 70:
                     strip.set_pixel_rgb(led, colors[0], brightness)
         elif val == 6:
-            led_size = int(y_data[val-1] * mid_multiplier)
+            led_size = int(y_data[val-1] * low_multiplier)
             for led in range(75,led_size+75):
                 if led >= 75 and led < 80:
                     strip.set_pixel_rgb(led, colors[2], brightness)
@@ -142,7 +143,7 @@ while True:
                 elif led >= 85:
                     strip.set_pixel_rgb(led, colors[0], brightness)
         elif val == 7:
-            led_size = int(y_data[val-1] * mid_multiplier)
+            led_size = int(y_data[val-1] * low_multiplier)
             for led in range(90,led_size+90):
                 if led >= 90 and led < 95:
                     strip.set_pixel_rgb(led, colors[2], brightness)
@@ -151,7 +152,7 @@ while True:
                 elif led >= 100:
                     strip.set_pixel_rgb(led, colors[0], brightness)
         elif val == 8:
-            led_size = int(y_data[val-1] * mid_multiplier)
+            led_size = int(y_data[val-1] * low_multiplier)
             for led in range(105,led_size+105):
                 if led >= 105 and led < 110:
                     strip.set_pixel_rgb(led, colors[2], brightness)
@@ -160,7 +161,7 @@ while True:
                 elif led >= 115:
                     strip.set_pixel_rgb(led, colors[0], brightness)
         elif val == 9:
-            led_size = int(y_data[val-1] * mid_multiplier)
+            led_size = int(y_data[val-1] * low_multiplier)
             for led in range(120,led_size+120):
                 if led >= 120 and led < 125:
                     strip.set_pixel_rgb(led, colors[2], brightness)
@@ -169,7 +170,7 @@ while True:
                 elif led >= 130:
                     strip.set_pixel_rgb(led, colors[0], brightness)           
         elif val == 10:
-            led_size = int(y_data[val-1] * mid_multiplier)
+            led_size = int(y_data[val-1] * low_multiplier)
             for led in range(135,led_size+135):
                 if led >= 135 and led < 140:
                     strip.set_pixel_rgb(led, colors[2], brightness)
@@ -178,7 +179,7 @@ while True:
                 elif led >= 145:
                     strip.set_pixel_rgb(led, colors[0], brightness)
         elif val == 11:
-            led_size = int(y_data[val-1] * mid_multiplier)
+            led_size = int(y_data[val-1] * low_multiplier)
             for led in range(150,led_size+150):
                 if led >= 150 and led < 155:
                     strip.set_pixel_rgb(led, colors[2], brightness)
@@ -187,7 +188,7 @@ while True:
                 elif led >= 160:
                     strip.set_pixel_rgb(led, colors[0], brightness)
         elif val == 12:
-            led_size = int(y_data[val-1] * mid_multiplier)
+            led_size = int(y_data[val-1]* mid_multiplier)
             for led in range(165,led_size+165):
                 if led >= 165 and led < 170:
                     strip.set_pixel_rgb(led, colors[2], brightness)
@@ -196,7 +197,7 @@ while True:
                 elif led >= 175:
                     strip.set_pixel_rgb(led, colors[0], brightness)
         elif val == 13:
-            led_size = int(y_data[val-1] * mid_multiplier)
+            led_size = int(y_data[val-1]*mid_multiplier)
             for led in range(180,led_size+180):
                 if led >= 180 and led < 185:
                     strip.set_pixel_rgb(led, colors[2], brightness)
@@ -205,7 +206,7 @@ while True:
                 elif led >= 190:
                     strip.set_pixel_rgb(led, colors[0], brightness)
         elif val == 14:
-            led_size = int(y_data[val-1] * mid_multiplier)
+            led_size = int(y_data[val-1] * high_multiplier)
             for led in range(195,led_size+195):
                 if led >= 195 and led < 200:
                     strip.set_pixel_rgb(led, colors[2], brightness)
@@ -214,7 +215,7 @@ while True:
                 elif led >= 205:
                     strip.set_pixel_rgb(led, colors[0], brightness)
         elif val == 15:
-            led_size = int(y_data[val-1] * multiplier)
+            led_size = int(y_data[val-1] * high_multiplier)
             for led in range(210,led_size+210):
                 if led >= 210 and led < 215:
                     strip.set_pixel_rgb(led, colors[2], brightness)
@@ -223,7 +224,7 @@ while True:
                 elif led >= 220:
                     strip.set_pixel_rgb(led, colors[0], brightness)
         elif val == 16:
-            led_size = int(y_data[val-1] * multiplier)
+            led_size = int(y_data[val-1] * (high_multiplier-0.1))
             for led in range(225,led_size+225):
                 if led >= 225 and led < 230:
                     strip.set_pixel_rgb(led, colors[2], brightness)
@@ -233,7 +234,6 @@ while True:
                     strip.set_pixel_rgb(led, colors[0], brightness)         
         
     strip.show()
-    count += 1
 
 
 
